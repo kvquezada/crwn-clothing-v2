@@ -11,9 +11,13 @@ import {
 } from 'firebase/auth';
 import {
 	getFirestore,
-	doc,
-	getDoc,
-	setDoc,
+	doc, // point to the doc of firestore db
+	getDoc, // get doc data
+	setDoc, // set doc data
+	collection, // point to the collection of firestore db
+	writeBatch, // call write batch instance that you can perform crud
+	query,
+	getDocs, // get all docs
 } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
@@ -45,6 +49,38 @@ export const signInWithGoogleRedirect = () => signInWithRedirect(auth, googlePro
 
 // instantiate firestore
 export const db = getFirestore();
+
+// add shop data on load - only use once to store all shop_data
+export const addCollectionAndDocuments = async(collectionKey, objectsToAdd) => {
+	// point to the collection of firestore db
+	const collectionRef = collection(db, collectionKey);
+	// call write batch instance
+	const batch = writeBatch(db);
+	console.log(objectsToAdd);
+	objectsToAdd.forEach((object) => {
+		const docRef = doc(collectionRef, object.title.toLowerCase());
+		batch.set(docRef, object);
+	})
+
+	await batch.commit();
+	console.log('done');
+};
+
+export const getCategoriesAndDocuments = async() => {
+	const collectionRef = collection(db, 'categories');
+	const q = query(collectionRef);
+
+	// querySnapshot.docs - array of individual documents/ instance inside
+	const querySnapshot = await getDocs(q);
+	console.log(querySnapshot.docs);
+	// returning/reducing to only one object
+	const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+		const {title, items} = docSnapshot.data()
+		acc[title.toLowerCase()] = items;
+		return acc;
+	}, {})
+	return categoryMap;
+};
 
 export const createUserDocumentFromAuth = async (userAuth, additionalInformation = {}) => {
 	if (!userAuth) return;
