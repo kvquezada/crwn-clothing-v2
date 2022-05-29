@@ -8,7 +8,7 @@ import {
 	createUserDocumentFromAuth
 } from "../../utils/firebase/firebase.utils";
 
-import './sign-up-form.styles.scss';
+import {SignInContainer} from "../sign-in-form/sign-in-form.styles";
 
 const defaultFormFields = {
 	displayName: '',
@@ -58,7 +58,7 @@ const SignUpForm = () => {
 	}
 
 	return (
-		<div className="sign-up-container">
+		<SignInContainer>
 			<h2>Don't have an account?</h2>
 			<span>Sign up with your email and password</span>
 			<form onSubmit={handleSubmit}>
@@ -106,7 +106,7 @@ const SignUpForm = () => {
 					value={confirmPassword}/>
 				<Button type='submit'>Sign Up </Button>
 			</form>
-		</div>
+		</SignInContainer>
 	)
 }
 
