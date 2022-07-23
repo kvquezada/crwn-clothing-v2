@@ -1,6 +1,13 @@
-import {createContext, useState, useEffect} from "react";
+import {createContext, useEffect, useReducer} from "react";
 
-import {createUserDocumentFromAuth, onAuthStateChangedListener} from "../utils/firebase/firebase.utils";
+import {createAction} from "../utils/reducer/reducer.utils";
+
+import {
+	createUserDocumentFromAuth,
+	onAuthStateChangedListener
+} from "../utils/firebase/firebase.utils";
+
+
 
 // as the actual value you want to access
 export const UserContext = createContext({
@@ -9,11 +16,37 @@ export const UserContext = createContext({
 
 });
 
+export const USER_ACTION_TYPES = {
+	'SET_CURRENT_USER': 'SET_CURRENT_USER'
+}
+
+const userReducer = (state, action) => {
+	const { type, payload} = action;
+
+	switch (type) {
+		case USER_ACTION_TYPES.SET_CURRENT_USER:
+			return {
+				...state,
+				currentUser: payload
+			}
+		default:
+			throw new Error(`Unhandled type ${type} in userReducer`)
+	}
+}
+
+const INITIAL_STATE = {
+	currentUser: null
+}
 // provider, actual component
 // alias component that allows us to use the context provider and wrap the children
 export const UserProvider = ({ children }) => {
-	const [currentUser, setCurrentUser] = useState(null);
-	const value = { currentUser, setCurrentUser};
+	const [{ currentUser }, dispatch] = useReducer(userReducer, INITIAL_STATE);
+
+	const setCurrentUser = (user) => {
+		dispatch(createAction(USER_ACTION_TYPES.SET_CURRENT_USER, user));
+	}
+
+	const value = { currentUser, setCurrentUser };
 
 	// run only once component mounts
 	useEffect(() => {
